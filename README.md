@@ -1,2 +1,2 @@
-# AtCode
-AtCodeの記録を残していくためのリポジトリです。
+# AtCoder
+AtCoderの記録を残していくためのリポジトリです。
