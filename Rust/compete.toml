@@ -20,29 +20,30 @@ test-suite = "{{ manifest_dir }}/testcases/{{ bin_alias }}.yml"
 # Emacs:
 #open = '["emacsclient", "-n"] + (.paths | map([.src, .test_suite]) | flatten)'
 
-[new]
-kind = "cargo-compete"
-# Platform
-#
-# - atcoder
-# - codeforces
-# - yukicoder
-platform = "atcoder"
-# Path (Liquid template)
-#
-# Variables:
-#
-# - `contest`:      Contest ID. **May be nil**
-# - `package_name`: Package name
-path = "./{{ contest }}"
+[template]
+src = '''
+use proconio::input;
 
-#[new]
-#kind = "oj-api"
-#url = "https://atcoder.jp/contests/{{ id }}"
-#path = "./{{ contest }}"
+fn main() {
+    input! {
+        n: usize,
+        mut plan: [(i32, i32, i32); n],  // Vec<(i32, i32, i32)>
+    }
+    plan.insert(0, (0, 0, 0));
+    let yes = plan.windows(2).all(|w| {
+        let (t0, x0, y0) = w[0];
+        let (t1, x1, y1) = w[1];
+        let time = t1 - t0;
+        let dist = (x1 - x0).abs() + (y1 - y0).abs();
+        dist <= time && time % 2 == dist % 2
+    });
+    println!("{}", if yes { "Yes" } else { "No" });
+}
+'''
 
-[new.template]
-lockfile = "./template-cargo-lock.toml"
+[template.new]
+# `edition` for `Cargo.toml`.
+edition = "2021"
 # `profile` for `Cargo.toml`.
 #
 # By setting this, you can run tests with `opt-level=3` while enabling `debug-assertions` and `overflow-checks`.
@@ -50,10 +51,7 @@ lockfile = "./template-cargo-lock.toml"
 #[dev]
 #opt-level = 3
 #'''
-
-[new.template.dependencies]
-kind = "inline"
-content = '''
+dependencies = '''
 num = "=0.2.1"
 num-bigint = "=0.2.6"
 num-complex = "=0.2.4"
@@ -94,19 +92,39 @@ whiteread = "=0.5.0"
 rustc-hash = "=1.1.0"
 smallvec = "=1.2.0"
 '''
-
-[new.template.src]
-kind = "inline"
-content = '''
-fn main() {
-    todo!();
-}
+dev-dependencies = '''
+#atcoder-202004-lock = { git = "https://github.com/qryxip/atcoder-202004-lock" }
 '''
+
+[template.new.copy-files]
+"./template-cargo-lock.toml" = "Cargo.lock"
+
+[new]
+kind = "cargo-compete"
+# Platform
+#
+# - atcoder
+# - codeforces
+# - yukicoder
+platform = "atcoder"
+# Path (Liquid template)
+#
+# Variables:
+#
+# - `contest`:      Contest ID. **May be nil**
+# - `package_name`: Package name
+path = "./{{ contest }}"
+
+#[new]
+#kind = "oj-api"
+#url = "https://atcoder.jp/contests/{{ id }}"
+#path = "./{{ contest }}"
 
 # for Library-Checker
 #[add]
 #url = "https://judge.yosupo.jp/problem/{{ args[0] }}"
 ##is-contest = ["false"] # optional
+##target-kind = "bin" # ["bin", "example"]. default to "bin"
 #bin-name = '{{ args[0] }}'
 ##bin-alias = '{{ args[0] }}' # optional
 ##bin-src-path = './src/bin/{{ bin_alias }}.rs' # optional
@@ -115,11 +133,14 @@ fn main() {
 #[add]
 #url = '{% case args[0] %}{% when "contest" %}https://yukicoder.me/contests/{{ args[1] }}{% when "problem" %}https://yukicoder.me/problems/no/{{ args[1] }}{% endcase %}'
 #is-contest = ["bash", "-c", '[[ $(cut -d / -f 4) == "contests" ]]'] # optional
+##target-kind = "bin" # ["bin", "example"]. default to "bin"
 #bin-name = '{% assign segments = url | split: "/" %}{{ segments[5] }}'
 ##bin-alias = '{% assign segments = url | split: "/" %}{{ segments[5] }}' # optional
 ##bin-src-path = './src/bin/{{ bin_alias }}.rs' # optional
 
 [test]
+# Toolchain for the test. (optional)
+toolchain = ""
 # Profile for `cargo build`. ("dev" | "release")
 #
 # Defaults to `"dev"`.
@@ -127,5 +148,5 @@ fn main() {
 
 #[submit.transpile]
 #kind = "command"
-#args = ["cargo", "equip", "--resolve-cfgs", "--remove", "docs", "--minify", "libs", "--rustfmt", "--check", "--bin", "{{ bin_name }}"]
+#args = ["cargo", "equip", "--exclude-atcoder-crates", "--resolve-cfgs", "--remove", "docs", "--minify", "libs", "--rustfmt", "--check", "--bin", "{{ bin_name }}"]
 ##language_id = ""

@@ -1,0 +1,2 @@
+cargo:rustc-env=TYPENUM_BUILD_OP=/Users/funayamahiroaki/study/AtCoder/Rust/target/debug/build/typenum-0994c8230bb7e7af/out/consts.rs
+cargo:rustc-env=TYPENUM_BUILD_CONSTS=/Users/funayamahiroaki/study/AtCoder/Rust/target/debug/build/typenum-0994c8230bb7e7af/out/op.rs
